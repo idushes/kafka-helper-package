@@ -1,0 +1,4 @@
+/dist/
+/build/
+/kafka_avro_helper.egg-info/
+.idea
