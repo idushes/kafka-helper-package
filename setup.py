@@ -2,16 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name='kafka-avro-helper',
-    version='0.0.1',
+    version='0.0.3',
     description='A package for Kafka and AVRO processing',
     author='Andrei Boiko',
     author_email='dushes.nadym@gmail.com',
     url='https://github.com/idushes/kafka-helper-package',
     packages=find_packages(),
     install_requires=[
-        'aiokafka',
-        'httpx',
-        'dataclasses-avroschema',
+        'aiokafka==0.8.1',
+        'httpx==0.24.1',
+        'dataclasses-avroschema==0.63.7',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
