@@ -10,7 +10,12 @@ SCHEMA_REGISTRY_URL = environ.get("SCHEMA_REGISTRY_URL", "http://localhost:8081"
 logger = logging.getLogger("uvicorn")
 
 
-async def validate_schemas(produce_schemas: list[Type[AvroModel]], consume_schemas: list[Type[AvroModel]]):
+async def validate_schemas(
+        produce_schemas: list[Type[AvroModel]] = None,
+        consume_schemas: list[Type[AvroModel]] = None
+):
+    produce_schemas = produce_schemas or []
+    consume_schemas = consume_schemas or []
     for model in produce_schemas:
         await validate_avro(model_type=model, schema_owner=True)
     for model in consume_schemas:
