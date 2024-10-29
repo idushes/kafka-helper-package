@@ -41,6 +41,15 @@ async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
         return data
 
 
+async def get_schema(topic: str, schema_id: int) -> dict:
+    url = f"{SCHEMA_REGISTRY_URL}/schemas/ids/{schema_id}"
+    async with AsyncClient() as client:
+        response = await client.get(url=url)
+        if response.status_code != 200:
+            raise Exception(response.text)
+        return response.json()
+
+
 def to_kebab_case(name: str) -> str:
     # Add a hyphen before transitions from lowercase letters or digits to uppercase letters,
     # but ignore consecutive uppercase letters (acronyms).
