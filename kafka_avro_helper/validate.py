@@ -6,14 +6,17 @@ import re
 from dataclasses_avroschema import AvroModel
 from httpx import AsyncClient
 
-SCHEMA_REGISTRY_URL = environ.get("SCHEMA_REGISTRY_URL", "http://localhost:8081")
-logger = logging.getLogger("uvicorn")
+
+SCHEMA_REGISTRY_URL = environ.get("SCHEMA_REGISTRY_URL")
 
 
 async def validate_schemas(
         produce_schemas: list[Type[AvroModel]] = None,
         consume_schemas: list[Type[AvroModel]] = None
 ):
+    if SCHEMA_REGISTRY_URL is None:
+        logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schemas not validated")
+        return
     produce_schemas = produce_schemas or []
     consume_schemas = consume_schemas or []
     for model in produce_schemas:
@@ -23,10 +26,13 @@ async def validate_schemas(
 
 
 async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
+    if SCHEMA_REGISTRY_URL is None:
+        logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schema not validated")
+        return
     schema = model_type.avro_schema()
     topic = to_kebab_case(model_type.__name__)
     subject = topic + "-value"
-    logger.info(f"Validating {topic} schema")
+    logging.info(f"Validating {topic} schema")
     compatibility = "/compatibility" if not schema_owner else ""
     url = f"{SCHEMA_REGISTRY_URL}{compatibility}/subjects/{subject}/versions"
     async with AsyncClient() as client:
@@ -42,6 +48,8 @@ async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
 
 
 async def get_schema(schema_id: int) -> dict:
+    if SCHEMA_REGISTRY_URL is None:
+        raise Exception("SCHEMA_REGISTRY_URL environment variable not set")
     url = f"{SCHEMA_REGISTRY_URL}/schemas/ids/{schema_id}"
     async with AsyncClient() as client:
         response = await client.get(url=url)

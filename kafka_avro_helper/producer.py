@@ -3,7 +3,7 @@ from typing import Any, Optional
 from aiokafka import AIOKafkaProducer
 from dataclasses_avroschema import AvroModel
 import struct
-
+import logging
 
 MAGIC_BYTE = 0
 
@@ -38,10 +38,14 @@ async def get_producer() -> AIOKafkaProducer:
     """ Get a Kafka producer instance, it will be created if it does not exist and started if it is not ready """
     global __producer__
     if not __producer__:
+        KAFKA_BROKERS = environ.get("KAFKA_BROKERS")
         __producer__ = AIOKafkaProducer(
-            bootstrap_servers=environ.get("KAFKA_BROKERS", "localhost:9092"),
+            bootstrap_servers=KAFKA_BROKERS or "localhost",
             value_serializer=value_serializer,
             key_serializer=key_serializer
         )
+        if KAFKA_BROKERS is None:
+            logging.warning("KAFKA_BROKERS environment variable not set, producer not started")
+            return __producer__
     await __producer__.start()
     return __producer__
