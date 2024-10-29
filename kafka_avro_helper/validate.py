@@ -1,10 +1,10 @@
 import logging
+from json import loads
 from os import environ
 from typing import Type
 import re
 from dataclasses_avroschema import AvroModel
 from httpx import AsyncClient
-
 
 SCHEMA_REGISTRY_URL = environ.get("SCHEMA_REGISTRY_URL", "http://localhost:8081")
 logger = logging.getLogger("uvicorn")
@@ -41,13 +41,15 @@ async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
         return data
 
 
-async def get_schema(topic: str, schema_id: int) -> dict:
+async def get_schema(schema_id: int) -> dict:
     url = f"{SCHEMA_REGISTRY_URL}/schemas/ids/{schema_id}"
     async with AsyncClient() as client:
         response = await client.get(url=url)
         if response.status_code != 200:
             raise Exception(response.text)
-        return response.json()
+        data = response.json()
+        schema_str = data.get("schema")
+        return loads(schema_str)
 
 
 def to_kebab_case(name: str) -> str:
