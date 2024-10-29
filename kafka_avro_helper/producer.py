@@ -6,8 +6,6 @@ import struct
 import logging
 
 MAGIC_BYTE = 0
-
-
 __producer__: AIOKafkaProducer = None   # NOQA
 
 
@@ -49,3 +47,17 @@ async def get_producer() -> AIOKafkaProducer:
             return __producer__
     await __producer__.start()
     return __producer__
+
+
+async def send_message(
+        topic: str,
+        key: Any,
+        value: AvroModel,
+        headers: dict = None,
+        wait=True
+):
+    producer = await get_producer()
+    if wait:
+        await producer.send_and_wait(topic, key=key, value=value, headers=headers)
+    else:
+        await producer.send(topic, key=key, value=value, headers=headers)
