@@ -1,6 +1,7 @@
 import asyncio
-from tests.user_feedback import UserFeedback
+from kafka_avro_helper.producer import get_producer
 from kafka_avro_helper.validate import validate_schemas
+from tests.user_feedback import UserFeedback
 
 
 async def send_message(producer):
@@ -10,12 +11,12 @@ async def send_message(producer):
 
 
 async def main():
-    from kafka_avro_helper.producer import producer
+    producer = await get_producer()
     await validate_schemas(produce_schemas=[UserFeedback])
     try:
-        await producer.start()
         await send_message(producer)
     finally:
+        await producer.flush()
         await producer.stop()
 
 
