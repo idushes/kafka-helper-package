@@ -16,7 +16,7 @@ async def process_user_feedback(
 
 async def main():
     await validate_schemas(consume_schemas=[UserFeedback, SlowQraphqlOperationDetected])
-    consumer, producer = await consume_messages(callback=process_user_feedback)
+    consumer, producer = await consume_messages(callback=process_user_feedback, postfix="_process_user_feedback")
     await consumer.stop()
     await producer.flush()
     await producer.stop()

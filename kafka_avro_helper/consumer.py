@@ -103,7 +103,7 @@ async def consume_messages(callback: Callback, postfix: str = "") -> (AIOKafkaCo
     topics = list(value_annotation.keys())
     consumer = await get_consumer(topics=topics, postfix=postfix)
     producer = await get_producer()
-    if not consumer.paused():
+    if len(consumer.subscription()) == 0:
         return consumer, producer
     async for record in consumer:
         try:

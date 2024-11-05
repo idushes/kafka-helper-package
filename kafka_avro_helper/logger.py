@@ -1,3 +1,3 @@
 import logging
 
-logger = logging.getLogger("kafka_avro_helper")
+logger = logging.getLogger("kafka-avro-helper")
