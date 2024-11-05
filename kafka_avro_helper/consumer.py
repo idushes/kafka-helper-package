@@ -11,7 +11,7 @@ from types import UnionType
 from dataclasses_avroschema import AvroModel
 from .producer import get_producer, AIOKafkaProducer
 from .validate import to_kebab_case, get_schema
-import logging
+from .logger import logger
 
 
 KAFKA_CONSUMER_GROUP_ID = environ.get("KAFKA_CONSUMER_GROUP_ID", "default")
@@ -63,15 +63,15 @@ async def get_consumer(topics: Optional[list[str]] = None, postfix: str = "") ->
         auto_offset_reset='earliest',
     )
     if KAFKA_BROKERS is None:
-        logging.warning("KAFKA_BROKERS environment variable not set, consumer not started")
+        logger.warning("KAFKA_BROKERS environment variable not set, consumer not started")
         return _consumer
     await _consumer.start()
     if topics:
         _consumer.subscribe(topics=topics)
-        logging.info(f"Consumer started, listening to topics: {topics}")
+        logger.info(f"Consumer started, listening to topics: {topics}")
     else:
         _consumer.subscribe(pattern=".*")
-        logging.info("Consumer started, listening to all topics")
+        logger.info("Consumer started, listening to all topics")
     return _consumer
 
 
@@ -127,9 +127,9 @@ async def consume_messages(callback: Callback, postfix: str = "") -> (AIOKafkaCo
                 )
             await consumer.commit()
         except (UnicodeDecodeError, MagicByteError) as e:
-            logging.warning(f"Error decoding message ({record.topic} - {record.key}): {e}")
+            logger.warning(f"Error decoding message ({record.topic} - {record.key}): {e}")
         except Exception as e:
-            logging.error(f"Error processing message ({record.topic} - {record.key}): {e}")
+            logger.error(f"Error processing message ({record.topic} - {record.key}): {e}")
             await consumer.seek_to_committed()
             # TODO: send message to dead letter queue
             await sleep(5)

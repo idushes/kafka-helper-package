@@ -3,7 +3,7 @@ from typing import Any, Optional
 from aiokafka import AIOKafkaProducer
 from dataclasses_avroschema import AvroModel
 import struct
-import logging
+from .logger import logger
 
 MAGIC_BYTE = 0
 __producer__: AIOKafkaProducer = None   # NOQA
@@ -46,9 +46,9 @@ async def get_producer() -> AIOKafkaProducer:
         )
         if KAFKA_BROKERS:
             await __producer__.start()
-            logging.info("Starting Kafka producer")
+            logger.info("Starting Kafka producer")
         else:
-            logging.warning("KAFKA_BROKERS environment variable not set, producer not started")
+            logger.warning("KAFKA_BROKERS environment variable not set, producer not started")
     return __producer__
 
 

@@ -1,10 +1,10 @@
-import logging
 from json import loads
 from os import environ
 from typing import Type
 import re
 from dataclasses_avroschema import AvroModel
 from httpx import AsyncClient
+from .logger import logger
 
 
 SCHEMA_REGISTRY_URL = environ.get("SCHEMA_REGISTRY_URL")
@@ -16,7 +16,7 @@ async def validate_schemas(
 ):
     """ Validate Avro schemas, raises an exception if the schema is not compatible """
     if SCHEMA_REGISTRY_URL is None:
-        logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schemas not validated")
+        logger.warning("SCHEMA_REGISTRY_URL environment variable not set, schemas not validated")
         return
     produce_schemas = produce_schemas or []
     consume_schemas = consume_schemas or []
@@ -29,12 +29,12 @@ async def validate_schemas(
 async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
     """ Validate Avro schema, raises an exception if the schema is not compatible """
     if SCHEMA_REGISTRY_URL is None:
-        logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schema not validated")
+        logger.warning("SCHEMA_REGISTRY_URL environment variable not set, schema not validated")
         return
     schema = model_type.avro_schema()
     topic = to_kebab_case(model_type.__name__)
     subject = topic + "-value"
-    logging.info(f"Validating {topic} schema")
+    logger.info(f"Validating {topic} schema")
     compatibility = "/compatibility" if not schema_owner else ""
     url = f"{SCHEMA_REGISTRY_URL}{compatibility}/subjects/{subject}/versions"
     async with AsyncClient() as client:
