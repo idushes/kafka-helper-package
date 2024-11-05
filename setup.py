@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='kafka-avro-helper',
-    version='0.0.6',
+    version='0.0.7',
     description='A package for Kafka and AVRO processing',
     author='Andrei Boiko',
     author_email='dushes.nadym@gmail.com',

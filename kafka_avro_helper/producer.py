@@ -10,6 +10,7 @@ __producer__: AIOKafkaProducer = None   # NOQA
 
 
 def value_serializer(value: Any) -> Optional[bytes]:
+    """ Serialize AvroModel to bytes """
     if value is None:
         return None
     if isinstance(value, bytes):
@@ -24,6 +25,7 @@ def value_serializer(value: Any) -> Optional[bytes]:
 
 
 def key_serializer(value: Any) -> Optional[bytes]:
+    """ Serialize key to bytes """
     if value is None:
         return None
     if isinstance(value, bytes):
@@ -42,10 +44,11 @@ async def get_producer() -> AIOKafkaProducer:
             value_serializer=value_serializer,
             key_serializer=key_serializer
         )
-        if KAFKA_BROKERS is None:
+        if KAFKA_BROKERS:
+            await __producer__.start()
+            logging.info("Starting Kafka producer")
+        else:
             logging.warning("KAFKA_BROKERS environment variable not set, producer not started")
-            return __producer__
-    await __producer__.start()
     return __producer__
 
 
@@ -56,6 +59,7 @@ async def send_message(
         headers: dict = None,
         wait=True
 ):
+    """ Send a message to a Kafka topic, optionally wait for the message to be sent. """
     producer = await get_producer()
     if wait:
         await producer.send_and_wait(topic, key=key, value=value, headers=headers)

@@ -34,6 +34,7 @@ class MagicByteError(ValueError):
 
 
 async def value_deserializer(data: Optional[bytes], annotation: AvroModel) -> Optional[AvroModel]:
+    """ Deserialize Avro data to AvroModel """
     global schemas
     if data is None:
         return None
@@ -52,12 +53,13 @@ async def value_deserializer(data: Optional[bytes], annotation: AvroModel) -> Op
     return value
 
 
-async def get_consumer(topics: Optional[list[str]] = None) -> AIOKafkaConsumer:
+async def get_consumer(topics: Optional[list[str]] = None, postfix: str = "") -> AIOKafkaConsumer:
+    """ postfix is used to create a unique group_id """
     KAFKA_BROKERS = environ.get("KAFKA_BROKERS")
     _consumer = AIOKafkaConsumer(
         bootstrap_servers=KAFKA_BROKERS or "localhost",
         enable_auto_commit=False,
-        group_id=KAFKA_CONSUMER_GROUP_ID,
+        group_id=KAFKA_CONSUMER_GROUP_ID + postfix,
         auto_offset_reset='earliest',
     )
     if KAFKA_BROKERS is None:
@@ -66,8 +68,10 @@ async def get_consumer(topics: Optional[list[str]] = None) -> AIOKafkaConsumer:
     await _consumer.start()
     if topics:
         _consumer.subscribe(topics=topics)
+        logging.info(f"Consumer started, listening to topics: {topics}")
     else:
         _consumer.subscribe(pattern=".*")
+        logging.info("Consumer started, listening to all topics")
     return _consumer
 
 
@@ -93,10 +97,11 @@ def extract_value_annotation(callback: Callback) -> Dict[str, AvroModel]:
     return value_annotation
 
 
-async def consume_messages(callback: Callback) -> (AIOKafkaConsumer, AIOKafkaProducer):
+async def consume_messages(callback: Callback, postfix: str = "") -> (AIOKafkaConsumer, AIOKafkaProducer):
+    """ Consume messages from Kafka, process them and send the result to another topic """
     value_annotation = extract_value_annotation(callback)
     topics = list(value_annotation.keys())
-    consumer = await get_consumer(topics)
+    consumer = await get_consumer(topics=topics, postfix=postfix)
     producer = await get_producer()
     if not consumer.paused():
         return consumer, producer

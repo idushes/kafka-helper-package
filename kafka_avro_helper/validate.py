@@ -14,6 +14,7 @@ async def validate_schemas(
         produce_schemas: list[Type[AvroModel]] = None,
         consume_schemas: list[Type[AvroModel]] = None
 ):
+    """ Validate Avro schemas, raises an exception if the schema is not compatible """
     if SCHEMA_REGISTRY_URL is None:
         logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schemas not validated")
         return
@@ -26,6 +27,7 @@ async def validate_schemas(
 
 
 async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
+    """ Validate Avro schema, raises an exception if the schema is not compatible """
     if SCHEMA_REGISTRY_URL is None:
         logging.warning("SCHEMA_REGISTRY_URL environment variable not set, schema not validated")
         return
@@ -48,6 +50,7 @@ async def validate_avro(model_type: Type[AvroModel], schema_owner: bool):
 
 
 async def get_schema(schema_id: int) -> dict:
+    """ Get schema by id, raises an exception if the schema is not found """
     if SCHEMA_REGISTRY_URL is None:
         raise Exception("SCHEMA_REGISTRY_URL environment variable not set")
     url = f"{SCHEMA_REGISTRY_URL}/schemas/ids/{schema_id}"
@@ -61,6 +64,7 @@ async def get_schema(schema_id: int) -> dict:
 
 
 def to_kebab_case(name: str) -> str:
+    """ Convert CamelCase to kebab-case, example: CamelCase -> camel-case """
     # Add a hyphen before transitions from lowercase letters or digits to uppercase letters,
     # but ignore consecutive uppercase letters (acronyms).
     kebab_case_name = re.sub(r'(?<=[a-z0-9])(?=[A-Z])', '-', name)
