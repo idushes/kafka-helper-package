@@ -61,7 +61,11 @@ async def send_message(
 ):
     """ Send a message to a Kafka topic, optionally wait for the message to be sent. """
     producer = await get_producer()
-    if wait:
-        await producer.send_and_wait(topic, key=key, value=value, headers=headers)
+    if headers is not None:
+        b_headers = [(k, v.encode('utf-8')) for k, v in headers.items()]
     else:
-        await producer.send(topic, key=key, value=value, headers=headers)
+        b_headers = None
+    if wait:
+        await producer.send_and_wait(topic, key=key, value=value, headers=b_headers)
+    else:
+        await producer.send(topic, key=key, value=value, headers=b_headers)
