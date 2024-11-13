@@ -6,10 +6,10 @@ import fastavro  # NOQA
 from dataclasses import dataclass, field
 from typing import Callable, Union, get_origin, get_args, Awaitable, Optional, Dict, Any
 from os import environ
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from types import UnionType
 from dataclasses_avroschema import AvroModel
-from .producer import get_producer, AIOKafkaProducer
+from .producer import get_producer, send_message
 from .validate import to_kebab_case, get_schema
 from .logger import logger
 
@@ -24,6 +24,12 @@ class KafkaMessage:
     key: Any
     value: AvroModel
     headers: Dict[str, str] = field(default_factory=dict)
+
+
+@dataclass
+class ConsumerConfig:
+    postfix: str = ""
+    auto_offset_reset: str = 'earliest'
 
 
 Callback = Callable[..., Awaitable[list[KafkaMessage]]]
@@ -119,7 +125,7 @@ async def consume_messages(callback: Callback, postfix: str = "") -> (AIOKafkaCo
             for message in messages:
                 if not issubclass(type(message), KafkaMessage):
                     raise Exception(f"Event {message} is not a subclass of KafkaEventBase")
-                await producer.send_and_wait(
+                await send_message(
                     topic=message.topic,
                     key=message.key,
                     value=message.value,
