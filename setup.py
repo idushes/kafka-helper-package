@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='kafka-avro-helper',
-    version='0.1.5',
+    version='0.1.7',
     description='A package for Kafka and AVRO processing',
     author='Andrei Boiko',
     author_email='dushes.nadym@gmail.com',
@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'aiokafka>=0.8.1,<1.0.0',
-        'httpx>=0.24.1,<1.0.0',
+        'httpx>=0.23.0,<1.0.0',
         'dataclasses-avroschema>=0.63.7,<1.0.0'
     ],
     classifiers=[

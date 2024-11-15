@@ -15,6 +15,7 @@ from .logger import logger
 
 
 KAFKA_CONSUMER_GROUP_ID = environ.get("KAFKA_CONSUMER_GROUP_ID", "default")
+KAFKA_BROKERS = environ.get("KAFKA_BROKERS")
 schemas = {}
 
 
@@ -61,7 +62,6 @@ async def value_deserializer(data: Optional[bytes], annotation: AvroModel) -> Op
 
 async def get_consumer(topics: Optional[list[str]] = None, postfix: str = "") -> AIOKafkaConsumer:
     """ postfix is used to create a unique group_id """
-    KAFKA_BROKERS = environ.get("KAFKA_BROKERS")
     _consumer = AIOKafkaConsumer(
         bootstrap_servers=KAFKA_BROKERS or "localhost",
         enable_auto_commit=False,

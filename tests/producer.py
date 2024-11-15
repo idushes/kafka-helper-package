@@ -1,20 +1,19 @@
 import asyncio
-from kafka_avro_helper.producer import get_producer
+import logging
+from kafka_avro_helper.producer import get_producer, send_message
 from kafka_avro_helper.validate import validate_schemas
 from tests.user_feedback import UserFeedback
 
-
-async def send_message(producer):
-    key = "test-key"
-    value = UserFeedback(user_id="test-user-id", text="test-text", audio=None)
-    await producer.send_and_wait("user-feedback", key=key, value=value)
+logging.basicConfig(level=logging.INFO)
 
 
 async def main():
     producer = await get_producer()
     await validate_schemas(produce_schemas=[UserFeedback])
     try:
-        await send_message(producer)
+        key = "test-key"
+        value = UserFeedback(user_id="test-user-id", text="test-text", audio=None)
+        await send_message("user-feedback", key=key, value=value)
     finally:
         await producer.flush()
         await producer.stop()
