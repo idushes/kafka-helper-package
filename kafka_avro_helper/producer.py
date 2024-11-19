@@ -20,7 +20,7 @@ def value_serializer(value: Any) -> Optional[bytes]:
         value.validate()
         serialized_data = value.serialize()
         metadata = value.get_metadata()
-        if "schema_id" not in metadata:
+        if not hasattr(metadata, "schema_id"):
             raise Exception("Model not validated. It should be validated before sending it to Kafka")
         schema_id = value.get_metadata().schema_id  # NOQA
         prefix_bytes = struct.pack(">bI", MAGIC_BYTE, schema_id)
